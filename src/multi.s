@@ -1,24 +1,47 @@
 .globl multiply
-
-.text
 multiply:
-    # a0: val_1
-    # a1: val_2                     # a1 = val_2
-    add t0, x0, a0                  # t0 = val_1
-    add a0, x0, x0                  # a0 = val_3 = 0
-    add t1, x0, x0                  # t1 = cnt = 0
+    # a0: val_1 (multiplicand)
+    # a1: val_2 (multiplier)
+    # Result will be stored in a0
+
+    mv t0, a0                  # t0 = val_1 (multiplicand)
+    li a0, 0                   # a0 = 0 (initialize result to 0)
+
 multiply_loop:
-    beq a1, x0, multiply_loop_end   # terminate loop if a1 = 0; val_2 = 0
-    andi t2, a1, 0x1                # t2 = LSB(a1) = LSB(val_2) = a1 & 1 = val_2 & 1
-    beq t2, x0, multiply_loop_skip  # skip adding to t0 if t2 = LSB(val_2) = 0
-    sll t2, t0, t1                  # t2 = t0 << t1 = val_1 << cnt
-    add a0, a0, t2                  # a0 = a0 + val_1 << cnt = val_3 + val_1 << cnt
-multiply_loop_skip:
-    addi t1, t1, 1                  # t1 = t1 + 1; cnt = cnt + 1
-    srli a1, a1, 1                  # a1 = a1 >> 1; val_2 = val_2 >> 1
-    j multiply_loop                 # continue loop
+    beq a1, x0, multiply_loop_end   # if a1 (multiplier) == 0, end loop
+    andi t1, a1, 1                  # t1 = a1 & 1 (check if LSB of multiplier is set)
+    beq t1, x0, multiply_skip_add   # if LSB is 0, skip addition
+
+    add a0, a0, t0                  # a0 = a0 + t0 (add shifted multiplicand to result)
+
+multiply_skip_add:
+    slli t0, t0, 1                  # t0 = t0 << 1 (shift multiplicand left by 1)
+    srli a1, a1, 1                  # a1 = a1 >> 1 (shift multiplier right by 1)
+    j multiply_loop                 # repeat loop
+
 multiply_loop_end:
     jr ra                           # return control to caller
+
+
+# .text
+# multiply:
+#     # a0: val_1
+#     # a1: val_2                     # a1 = val_2
+#     add t0, x0, a0                  # t0 = val_1
+#     add a0, x0, x0                  # a0 = val_3 = 0
+#     add t1, x0, x0                  # t1 = cnt = 0
+# multiply_loop:
+#     beq a1, x0, multiply_loop_end   # terminate loop if a1 = 0; val_2 = 0
+#     andi t2, a1, 0x1                # t2 = LSB(a1) = LSB(val_2) = a1 & 1 = val_2 & 1
+#     beq t2, x0, multiply_loop_skip  # skip adding to t0 if t2 = LSB(val_2) = 0
+#     sll t2, t0, t1                  # t2 = t0 << t1 = val_1 << cnt
+#     add a0, a0, t2                  # a0 = a0 + val_1 << cnt = val_3 + val_1 << cnt
+# multiply_loop_skip:
+#     addi t1, t1, 1                  # t1 = t1 + 1; cnt = cnt + 1
+#     srli a1, a1, 1                  # a1 = a1 >> 1; val_2 = val_2 >> 1
+#     j multiply_loop                 # continue loop
+# multiply_loop_end:
+#     jr ra                           # return control to caller
 
 # multiply:
 #     # a0: val_1
