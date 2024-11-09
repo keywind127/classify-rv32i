@@ -1,3 +1,5 @@
+.import multi.s
+
 .globl read_matrix
 
 .text
@@ -74,8 +76,12 @@ read_matrix:
     sw t1, 0(s3)     # saves num rows
     sw t2, 0(s4)     # saves num cols
 
-    # mul s1, t1, t2   # s1 is number of elements
+    #mul s1, t1, t2   # s1 is number of elements
     # FIXME: Replace 'mul' with your own implementation
+    mv a0, t1
+    mv a1, t2
+    jal ra, multiply
+    mv s1, a0
 
     slli t3, s1, 2
     sw t3, 24(sp)    # size in bytes

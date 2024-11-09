@@ -1,3 +1,5 @@
+.import multi.s
+
 .globl dot
 
 .text
@@ -31,16 +33,44 @@ dot:
     blt a3, t0, error_terminate   
     blt a4, t0, error_terminate  
 
-    li t0, 0            
-    li t1, 0         
+    li t0, 0                    # t0 = accum = 0
+    li t1, 0                    # t1 = index = 0
 
 loop_start:
-    bge t1, a2, loop_end
-    # TODO: Add your own implementation
+    bge t1, a2, loop_end        # terminate loop if t1 > a2; index > num_elements
+    
+    mul t2, t1, a3              # t2 = t1 * a3 = index_1 = index * stride_1
+
+    # mv t3, a0
+    # mv t4, a1
+
+    # mv a0, t1
+    # mv a1, a3
+    # jal ra, multiply
+    # mv t2, a0
+
+    # mv a0, t3
+    # mv a1, t4
+    
+    slli t2, t2, 2              # t2 = index_1 * 4
+    add t2, a0, t2              # t2 = &array_1 + index_1 * 4
+    lw t2, 0(t2)                # t2 = array_1[index_1]
+    
+    mul t3, t1, a4              # t3 = t1 * a4 = index_2 = index * stride_2
+    
+    slli t3, t3, 2              # t3 = index_2 * 4
+    add t3, a1, t3              # t3 = &array_2 + index_2 * 4
+    lw t3, 0(t3)                # t3 = array_2[index_2]
+    
+    mul t2, t2, t3              # t2 = t2 * t3 = array_1[index_1] * array_2[index_2]
+    
+    add t0, t0, t2              # t0 = t0 + t2; accum += array_1[index_1] * array_2[index_2]
+    addi t1, t1, 1              # t1 = t1 + 1; index = index + 1
+    j loop_start                # continue loop
 
 loop_end:
-    mv a0, t0
-    jr ra
+    mv a0, t0                   # set accum data
+    jr ra                       # return control to caller
 
 error_terminate:
     blt a2, t0, set_error_36
