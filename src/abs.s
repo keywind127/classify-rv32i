@@ -21,7 +21,8 @@ abs:
     lw t0 0(a0)
     bge t0, zero, done
 
-    # TODO: Add your own implementation
+    sub t0, x0, t0      # t0 = -index
+    sw t0, 0(a0)        # *addr = -index
 
 done:
     # Epilogue
